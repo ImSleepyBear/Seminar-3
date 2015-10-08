@@ -53,6 +53,7 @@ public class MemoryManager {
         byte data = 0;
         //calculate pageNumber and index from the logical address
 
+        // variables calculating pagenumber and index
         int pageNumber = (logicalAddress / NbrOfPages);
         int index = (logicalAddress - (pageNumber * PageSize));
 
