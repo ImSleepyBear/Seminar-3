@@ -26,6 +26,8 @@ public class MemoryManager {
     private int freePos; //points to the frame where we should insert page
     private int pageFaults = 0;
 
+    // this section sets the size of the pagetable, the amount of pages,
+    // the space for the physical memory (RAM) and states the pagefile (.bin file)
     public MemoryManager(int pages, int pageSize, int frames, String pFile) {
         try {
             //initate the virtual memory
