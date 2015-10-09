@@ -26,6 +26,8 @@ public class MemoryManager {
     private int freePos; //points to the frame where we should insert page
     private int pageFaults = 0;
 
+    private int[] physMemory;
+
     // this section sets the size of the pagetable, the amount of pages,
     // the space for the physical memory (RAM) and states the pagefile (.bin file)
     public MemoryManager(int pages, int pageSize, int frames, String pFile) {
@@ -35,11 +37,15 @@ public class MemoryManager {
             PageSize = pageSize;
             NbrOfFrames = frames;
             freePos = 0;
+
+            physMemory = new int[NbrOfFrames];
+
             //create pageTable
             //initialy no pages loaded into physical memory
             pageTable = new int[NbrOfPages];
             for (int n = 0; n < NbrOfPages; n++) {
                 pageTable[n] = -1;
+                physMemory[n] = -1;
             }
             //allocate space for physical memory
             RAM = new byte[NbrOfFrames * PageSize];
@@ -59,13 +65,14 @@ public class MemoryManager {
         int pageNumber = (logicalAddress / NbrOfPages);
         int index = (logicalAddress - (pageNumber * PageSize));
 
+//        int index = (logicalAddress % NbrOfPages); // samma som ovanstående index fast uttryckt på ett annat sätt
         //check if we get a pageFault
         if (pageTable[pageNumber] == -1) {
             //call method to solve page fault
-            pageFault(pageNumber);
+//            pageFault(pageNumber);
             //the following two should be used in step 2 and 3 of the lab
-            //pageFaultFIFO(pageNumber);
-            //pageFaultLRU(pageNumber);
+            pageFaultFIFO(pageNumber);
+//            pageFaultLRU(pageNumber);
         }
         //read data from RAM
         int frame = pageTable[pageNumber];
@@ -82,6 +89,9 @@ public class MemoryManager {
     private void pageFault(int pageNumber) {
         //this is the simple solution where we assume same size of physical and logical number
         pageFaults++;
+        pageTable[pageNumber] = freePos;
+        physMemory[freePos] = pageNumber;
+
         //load page into frame number freePos
         try {
             //read data from pageFile into RAM
@@ -94,6 +104,8 @@ public class MemoryManager {
         }
         //update position to store next page
 
+        freePos++;
+
     }
 
     //solve a page fault for page number pageNumber
@@ -101,6 +113,27 @@ public class MemoryManager {
         //this solution allows different size of physical and logical number
         //page replacement using FIFO
         //freePos is used to point to next position
+
+        pageFaults++;
+        pageTable[pageNumber] = freePos;
+        physMemory[freePos] = pageNumber;
+
+        //load page into frame number freePos
+        if (freePos < 128) {
+            try {
+                //read data from pageFile into RAM
+                pageFile.seek(pageNumber * PageSize);
+                for (int b = 0; b < PageSize; b++) {
+                    RAM[freePos * PageSize + b] = pageFile.readByte();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //update position to store next page
+        } else{
+            freePos = 0;
+        }
+        freePos++;
 
     }
 

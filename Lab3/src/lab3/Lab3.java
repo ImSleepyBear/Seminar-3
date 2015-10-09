@@ -20,7 +20,8 @@ public class Lab3 {
         //page size 256
         //256 frames in physical memory
         //page file located in BACKING_STORE.bin
-        MemoryManager mmu=new MemoryManager(256,256,256,"BACKING_STORE.bin");
+//        MemoryManager mmu=new MemoryManager(256,256,256,"BACKING_STORE.bin");
+        MemoryManager mmu=new MemoryManager(256,256,128,"BACKING_STORE.bin");
         //create a MemoryProcess
         //this object simulates memory access of a process
         //the virtual addresses to read from are specified in addresses.txt
