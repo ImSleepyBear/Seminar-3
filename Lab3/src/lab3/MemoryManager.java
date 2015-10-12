@@ -114,25 +114,31 @@ public class MemoryManager {
         //page replacement using FIFO
         //freePos is used to point to next position
 
+        
+        /*
+        
+        Prova med att ha en egen metod som checkar av freepos och sätter det
+        till noll om det överstiger NbrOfFrames
+        
+        */
+         
         pageFaults++;
+
         pageTable[pageNumber] = freePos;
         physMemory[freePos] = pageNumber;
 
         //load page into frame number freePos
-        if (freePos < 128) {
-            try {
-                //read data from pageFile into RAM
-                pageFile.seek(pageNumber * PageSize);
-                for (int b = 0; b < PageSize; b++) {
-                    RAM[freePos * PageSize + b] = pageFile.readByte();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            //read data from pageFile into RAM
+            pageFile.seek(pageNumber * PageSize);
+            for (int b = 0; b < PageSize; b++) {
+                RAM[freePos * PageSize + b] = pageFile.readByte();
             }
-            //update position to store next page
-        } else{
-            freePos = 0;
+        } catch (IOException ex) {
+            Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        //update position to store next page
         freePos++;
 
     }
