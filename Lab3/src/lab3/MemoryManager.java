@@ -112,10 +112,16 @@ public class MemoryManager {
         //page replacement using FIFO
         //freePos is used to point to next position
 
-        pageFaults++;
+        /*
         
-        for(int i = 0; i < pageTable.length; i++){
-            if(pageTable[i] == -1){
+         Prova med att ha en egen metod som checkar av freepos och sätter det
+         till noll om det överstiger NbrOfFrames
+        
+         */
+        pageFaults++;
+
+        for (int i = 0; i < pageTable.length; i++) {
+            if (pageTable[i] == -1) {
                 pageTable[i] = freePos;
             }
         }
@@ -126,9 +132,12 @@ public class MemoryManager {
             for (int b = 0; b < PageSize; b++) {
                 RAM[freePos * PageSize + b] = pageFile.readByte();
             }
+
         } catch (IOException ex) {
             Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        //update position to store next page
         freePos++;
     }
 
