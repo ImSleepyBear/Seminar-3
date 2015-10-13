@@ -26,8 +26,7 @@ public class MemoryManager {
     private int freePos; //points to the frame where we should insert page
     private int pageFaults = 0;
 
-    private int[] physMemory;
-
+//    private int[] physMemory;
     // this section sets the size of the pagetable, the amount of pages,
     // the space for the physical memory (RAM) and states the pagefile (.bin file)
     public MemoryManager(int pages, int pageSize, int frames, String pFile) {
@@ -38,14 +37,13 @@ public class MemoryManager {
             NbrOfFrames = frames;
             freePos = 0;
 
-            physMemory = new int[NbrOfFrames];
-
+//            physMemory = new int[NbrOfFrames];
             //create pageTable
             //initialy no pages loaded into physical memory
             pageTable = new int[NbrOfPages];
             for (int n = 0; n < NbrOfPages; n++) {
                 pageTable[n] = -1;
-                physMemory[n] = -1;
+//                physMemory[n] = -1;
             }
             //allocate space for physical memory
             RAM = new byte[NbrOfFrames * PageSize];
@@ -90,7 +88,7 @@ public class MemoryManager {
         //this is the simple solution where we assume same size of physical and logical number
         pageFaults++;
         pageTable[pageNumber] = freePos;
-        physMemory[freePos] = pageNumber;
+//        physMemory[freePos] = pageNumber;
 
         //load page into frame number freePos
         try {
@@ -115,26 +113,23 @@ public class MemoryManager {
         //freePos is used to point to next position
 
         pageFaults++;
-        pageTable[pageNumber] = freePos;
-        physMemory[freePos] = pageNumber;
-
-        //load page into frame number freePos
-        if (freePos < 128) {
-            try {
-                //read data from pageFile into RAM
-                pageFile.seek(pageNumber * PageSize);
-                for (int b = 0; b < PageSize; b++) {
-                    RAM[freePos * PageSize + b] = pageFile.readByte();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
+        
+        for(int i = 0; i < pageTable.length; i++){
+            if(pageTable[i] == -1){
+                pageTable[i] = freePos;
             }
-            //update position to store next page
-        } else{
-            freePos = 0;
+        }
+//        pageTable[pageNumber] = freePos;
+
+        try {
+            pageFile.seek(pageNumber * PageSize);
+            for (int b = 0; b < PageSize; b++) {
+                RAM[freePos * PageSize + b] = pageFile.readByte();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         freePos++;
-
     }
 
     //solve a page fault for page number pageNumber
