@@ -27,10 +27,10 @@ public class MemoryManager {
     private int pageFaults = 0;
 
     private long[] timestamps;
-    private int[] currPages;
+    private int[] physMemory;
+//    private int[] currPages;
     private boolean full;
 
-//    private int[] physMemory;
     // this section sets the size of the pagetable, the amount of pages,
     // the space for the physical memory (RAM) and states the pagefile (.bin file)
     public MemoryManager(int pages, int pageSize, int frames, String pFile) {
@@ -51,7 +51,7 @@ public class MemoryManager {
             }
 
             timestamps = new long[NbrOfFrames]; //skapa en timestamp för varje frame
-            currPages = new int[NbrOfFrames];
+            physMemory = new int[NbrOfFrames];
             full = false;
             
             //allocate space for physical memory
@@ -166,13 +166,13 @@ public class MemoryManager {
                     time = i; // sätt time till den äldsta 
                 }
             }
-            pageTable[currPages[time]] = -1; // sätt pagen som är senast(time) till -1
+            pageTable[physMemory[time]] = -1; // sätt pagen som är senast(time) till -1
             freePos = time; //den nya freeposen blir den som är sist använd
         }
 
         pageFaults++; //faults ++
         pageTable[pageNumber] = freePos;
-        currPages[freePos] = pageNumber; //nuvarande sida blir pagenumber
+        physMemory[freePos] = pageNumber; //nuvarande sida blir pagenumber
         timestamps[freePos] = System.nanoTime();
 
         try {
@@ -191,51 +191,8 @@ public class MemoryManager {
 
         if (freePos == NbrOfFrames) {
             full = true; // kolla om den är full
-
         }
         
-//        pageFaults++;
-//        for (int i = 0; i < pageTable.length; i++) {
-//            if (pageTable[i] == freePos) {
-//                pageTable[i] = -1;
-//            }
-//        }
-//
-//        pageTable[pageNumber] = freePos;
-//
-//        try {
-//
-//            pageFile.seek(pageNumber * PageSize);
-//            for (int b = 0; b < PageSize; b++) {
-//                RAM[freePos * PageSize + b] = pageFile.readByte();
-//            }
-//        } catch (IOException ex) {
-//            Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//
-//        freePos++;
-//
-//        if (freePos == NbrOfFrames) {
-//
-//            //sätt lru till tiden
-//            long time = System.nanoTime();
-//
-//            //Jämför alla pages med hälp av timestamp
-//            for (int i = 0; i < NbrOfFrames; i++) { // Gå igenom alla frames
-//
-//                if (time >= timestamps[i]) {
-//                    //kolla den som har längst tid
-//
-//                    time = timestamps[i]; //sen sätt time till den till den time stampen
-//
-//                    //sätt den till i för det är den sista använda
-//                    //System.err.println("Nya FreePos är: " + i);
-//                    freePos = i;
-//
-//                }
-//
-//            }
-//        }
     }
 
     public int getNbrOfPagefaults() {

@@ -21,8 +21,8 @@ public class Lab3 {
         //256 frames in physical memory
         //page file located in BACKING_STORE.bin
 //        MemoryManager mmu=new MemoryManager(256,256,256,"BACKING_STORE.bin");
-        MemoryManager mmu=new MemoryManager(256,256,128,"BACKING_STORE.bin");
-//        MemoryManager mmu=new MemoryManager(256,256,64,"BACKING_STORE.bin");
+//        MemoryManager mmu=new MemoryManager(256,256,128,"BACKING_STORE.bin");
+        MemoryManager mmu=new MemoryManager(256,256,64,"BACKING_STORE.bin");
 //        MemoryManager mmu=new MemoryManager(256,256,32,"BACKING_STORE.bin");
         //create a MemoryProcess
         //this object simulates memory access of a process
