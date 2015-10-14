@@ -1,0 +1,26 @@
+256
+
+Iterations: 1000
+Page faults: 244
+
+FIFO
+128:
+Page faults: 538
+
+64:
+
+Page faults: 762
+
+32:
+Page faults: 882
+
+
+LRU
+128:
+Page faults: 539
+
+64:
+Page faults: 754
+
+32:
+Page faults: 879
