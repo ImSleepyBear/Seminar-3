@@ -28,8 +28,8 @@ public class MemoryManager {
 
     private long[] timestamps;
     private int[] physMemory;
-//    private int[] currPages;
-    private boolean full;
+    
+    private int physicalMemoryFilled;
 
     // this section sets the size of the pagetable, the amount of pages,
     // the space for the physical memory (RAM) and states the pagefile (.bin file)
@@ -41,18 +41,18 @@ public class MemoryManager {
             NbrOfFrames = frames;
             freePos = 0;
 
-//            physMemory = new int[NbrOfFrames];
             //create pageTable
             //initialy no pages loaded into physical memory
             pageTable = new int[NbrOfPages];
             for (int n = 0; n < NbrOfPages; n++) {
                 pageTable[n] = -1;
-//                physMemory[n] = -1;
             }
 
+            //variables for task 3
             timestamps = new long[NbrOfFrames]; //skapa en timestamp för varje frame
             physMemory = new int[NbrOfFrames];
-            full = false;
+            
+            physicalMemoryFilled = 0;
             
             //allocate space for physical memory
             RAM = new byte[NbrOfFrames * PageSize];
@@ -70,14 +70,12 @@ public class MemoryManager {
 
         // variables calculating pagenumber and index
         int pageNumber = (logicalAddress / NbrOfPages);
-//        int index = (logicalAddress - (pageNumber * PageSize));
-
-        int index = (logicalAddress % NbrOfPages); // samma som ovanstående index fast uttryckt på ett annat sätt
+        int index = (logicalAddress % NbrOfPages);
+        
         //check if we get a pageFault
         if (pageTable[pageNumber] == -1) {
             //call method to solve page fault
 //            pageFault(pageNumber);
-            //the following two should be used in step 2 and 3 of the lab
 //            pageFaultFIFO(pageNumber);
             pageFaultLRU(pageNumber);
         }
@@ -101,7 +99,6 @@ public class MemoryManager {
         //this is the simple solution where we assume same size of physical and logical number
         pageFaults++;
         pageTable[pageNumber] = freePos;
-//        physMemory[freePos] = pageNumber;
 
         //load page into frame number freePos
         try {
@@ -130,7 +127,6 @@ public class MemoryManager {
         for (int i = 0; i < pageTable.length; i++) {
             if (pageTable[i] == freePos) {
                 pageTable[i] = -1;
-//                physMemory[freePos] = i; 
             }
         }
 
@@ -159,7 +155,7 @@ public class MemoryManager {
         //this solution allows different size of physical and logical number
         //victim is chosen by least recently used algorithm
 
-        if (full == true) {
+        if (physicalMemoryFilled == 1) {
             int time = 0; // gå igenom alla frames
             for (int i = 0; i < timestamps.length; i++) {
                 if (timestamps[time] > timestamps[i]) {
@@ -190,7 +186,7 @@ public class MemoryManager {
         freePos++;
 
         if (freePos == NbrOfFrames) {
-            full = true; // kolla om den är full
+            physicalMemoryFilled = 1; // kolla om den är full
         }
         
     }
