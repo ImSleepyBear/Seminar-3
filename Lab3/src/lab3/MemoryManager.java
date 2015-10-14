@@ -125,7 +125,7 @@ public class MemoryManager {
                 pageTable[i] = freePos;
             }
         }
-//        pageTable[pageNumber] = freePos;
+        pageTable[pageNumber] = freePos;
 
         try {
             pageFile.seek(pageNumber * PageSize);
@@ -139,6 +139,9 @@ public class MemoryManager {
 
         //update position to store next page
         freePos++;
+        
+        if(freePos == NbrOfFrames)
+            freePos = 0;
     }
 
     //solve a page fault for page number pageNumber
@@ -146,6 +149,24 @@ public class MemoryManager {
         //this solution allows different size of physical and logical number
         //victim is chosen by least recently used algorithm
 
+        pageFaults++;
+        pageTable[pageNumber] = freePos;
+//        physMemory[freePos] = pageNumber;
+
+        //load page into frame number freePos
+        try {
+            //read data from pageFile into RAM
+            pageFile.seek(pageNumber * PageSize);
+            for (int b = 0; b < PageSize; b++) {
+                RAM[freePos * PageSize + b] = pageFile.readByte();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //update position to store next page
+
+        freePos++;
+        
     }
 
     public int getNbrOfPagefaults() {
