@@ -26,7 +26,10 @@ public class MemoryManager {
     private int freePos; //points to the frame where we should insert page
     private int pageFaults = 0;
 
+    private long[] timestamps;
+    
 //    private int[] physMemory;
+    
     // this section sets the size of the pagetable, the amount of pages,
     // the space for the physical memory (RAM) and states the pagefile (.bin file)
     public MemoryManager(int pages, int pageSize, int frames, String pFile) {
@@ -38,6 +41,7 @@ public class MemoryManager {
             freePos = 0;
 
 //            physMemory = new int[NbrOfFrames];
+            
             //create pageTable
             //initialy no pages loaded into physical memory
             pageTable = new int[NbrOfPages];
@@ -45,6 +49,9 @@ public class MemoryManager {
                 pageTable[n] = -1;
 //                physMemory[n] = -1;
             }
+            
+            timestamps = new long[NbrOfFrames]; //skapa en timestamp för varje frame
+
             //allocate space for physical memory
             RAM = new byte[NbrOfFrames * PageSize];
             //initiate page file
@@ -61,21 +68,25 @@ public class MemoryManager {
 
         // variables calculating pagenumber and index
         int pageNumber = (logicalAddress / NbrOfPages);
-        int index = (logicalAddress - (pageNumber * PageSize));
+//        int index = (logicalAddress - (pageNumber * PageSize));
 
-//        int index = (logicalAddress % NbrOfPages); // samma som ovanstående index fast uttryckt på ett annat sätt
+        int index = (logicalAddress % NbrOfPages); // samma som ovanstående index fast uttryckt på ett annat sätt
         //check if we get a pageFault
         if (pageTable[pageNumber] == -1) {
             //call method to solve page fault
 //            pageFault(pageNumber);
             //the following two should be used in step 2 and 3 of the lab
-            pageFaultFIFO(pageNumber);
-//            pageFaultLRU(pageNumber);
+//            pageFaultFIFO(pageNumber);
+            pageFaultLRU(pageNumber);
         }
         //read data from RAM
         int frame = pageTable[pageNumber];
+        
+        timestamps[frame] = System.nanoTime();
+        
         int physicalAddress = frame * PageSize + index;
         data = RAM[physicalAddress];
+        
         //print result
         System.out.print("Virtual address: " + logicalAddress);
         System.out.print(" Physical address: " + physicalAddress);
@@ -120,12 +131,17 @@ public class MemoryManager {
          */
         pageFaults++;
 
+//        pageTable[pageNumber] = freePos;
+//        physMemory[freePos] = pageNumber;
+        
         for (int i = 0; i < pageTable.length; i++) {
-            if (pageTable[i] == -1) {
-                pageTable[i] = freePos;
+            if (pageTable[i] == freePos) {
+                pageTable[i] = -1;
+//                physMemory[freePos] = i; 
             }
         }
-//        pageTable[pageNumber] = freePos;
+        
+        pageTable[pageNumber] = freePos;
 
         try {
             pageFile.seek(pageNumber * PageSize);
@@ -137,6 +153,10 @@ public class MemoryManager {
             Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        if(freePos == NbrOfFrames){
+            freePos = 0;
+        }
+        
         //update position to store next page
         freePos++;
     }
@@ -146,6 +166,52 @@ public class MemoryManager {
         //this solution allows different size of physical and logical number
         //victim is chosen by least recently used algorithm
 
+        
+        pageFaults++;
+        for (int i = 0; i < pageTable.length; i++) {
+            if (pageTable[i] == freePos) {
+                pageTable[i] = -1;
+            }
+        }
+
+        pageTable[pageNumber] = freePos;
+
+        try {
+
+            pageFile.seek(pageNumber * PageSize);
+            for (int b = 0; b < PageSize; b++) {
+                RAM[freePos * PageSize + b] = pageFile.readByte();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MemoryManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        freePos++;
+
+        if (freePos == NbrOfFrames) {
+
+            //sätt lru till tiden
+            long time = System.nanoTime();
+
+
+            //Jämför alla pages med hälp av timestamp
+            for (int i = 0; i < NbrOfFrames; i++) { // Gå igenom alla frames
+                
+                if (time >= timestamps[i]) {
+                    //kolla den som har längst tid
+
+                    time = timestamps[i]; //sen sätt time till den till den time stampen
+
+                    //sätt den till i för det är den sista använda
+                    
+                    //System.err.println("Nya FreePos är: " + i);
+                    freePos = i;
+
+                }
+                
+
+            }
+        }
     }
 
     public int getNbrOfPagefaults() {
